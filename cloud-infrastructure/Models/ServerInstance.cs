@@ -14,7 +14,7 @@ namespace cloud_infrastructure.Models
         [MaxLength(63)]
         [Display(Name = "Hostname")]
         [RegularExpression(@"^[a-z0-9][a-z0-9\-]*[a-z0-9]$", ErrorMessage = "Lowercase letters, digits, and hyphens only.")]
-        public string Hostname { get; set; }
+        public string Hostname { get; set; } = string.Empty;
 
         [Required]
         [Range(1, 128)]
@@ -23,8 +23,8 @@ namespace cloud_infrastructure.Models
 
         [Required]
         public InstanceSize InstanceSize { get; set; }
-        public int DeveloperId { get; set; }
-        public ApplicationDbContext Developer { get; set; }
+        public string? DeveloperId { get; set; }
+        public Developer? Developer { get; set; }
         public ICollection<ServerSoftware> ServerSoftwares { get; set; } = new List<ServerSoftware>();
     }
 }

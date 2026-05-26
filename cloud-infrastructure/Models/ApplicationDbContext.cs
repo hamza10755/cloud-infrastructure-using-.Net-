@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace cloud_infrastructure.Models
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<Developer>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -13,6 +13,7 @@ namespace cloud_infrastructure.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<ServerSoftware>()
                 .HasKey(ss => new { ss.ServerInstanceId, ss.SoftwarePackageId });
         }
