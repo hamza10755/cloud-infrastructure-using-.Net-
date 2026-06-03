@@ -22,6 +22,10 @@ namespace cloud_infrastructure.Models
         public int RamGb { get; set; }
 
         [Required]
+        [Display(Name = "Status")]
+        public string Status { get; set; } = "Pending";
+
+        [Required]
         public InstanceSize InstanceSize { get; set; }
         public string? DeveloperId { get; set; }
         public Developer? Developer { get; set; }

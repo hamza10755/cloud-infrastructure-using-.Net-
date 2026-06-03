@@ -18,6 +18,13 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+    EnsureServerInstanceStatusColumn(dbContext);
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -42,3 +49,46 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+static void EnsureServerInstanceStatusColumn(ApplicationDbContext dbContext)
+{
+    var connection = dbContext.Database.GetDbConnection();
+    var shouldCloseConnection = connection.State != System.Data.ConnectionState.Open;
+
+    if (shouldCloseConnection)
+    {
+        connection.Open();
+    }
+
+    try
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA table_info('tbl_ProvisionedServers');";
+
+        var statusColumnExists = false;
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader["name"]?.ToString(), "Status", StringComparison.OrdinalIgnoreCase))
+            {
+                statusColumnExists = true;
+                break;
+            }
+        }
+
+        if (!statusColumnExists)
+        {
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = "ALTER TABLE tbl_ProvisionedServers ADD COLUMN Status TEXT NOT NULL DEFAULT 'Pending';";
+            alterCommand.ExecuteNonQuery();
+        }
+    }
+    finally
+    {
+        if (shouldCloseConnection)
+        {
+            connection.Close();
+        }
+    }
+}
