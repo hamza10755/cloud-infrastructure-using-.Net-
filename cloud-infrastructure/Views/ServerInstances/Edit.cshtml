@@ -1,0 +1,69 @@
+@model cloud_infrastructure.Models.ServerInstance
+
+<h2>Edit Server</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="ServerInstanceId" />
+
+    <div class="form-group">
+        <label>Hostname</label>
+        <input asp-for="Hostname" class="form-control" />
+        <span asp-validation-for="Hostname" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>RAM</label>
+        <input asp-for="RamGb" class="form-control" type="number" />
+        <span asp-validation-for="RamGb" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Instance Size</label>
+
+        <select asp-for="InstanceSize" class="form-control" asp-items="Html.GetEnumSelectList<cloud_infrastructure.Models.InstanceSize>()">
+        </select>
+
+        <span asp-validation-for="InstanceSize" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Status</label>
+
+        <select asp-for="Status" class="form-control">
+            @if (Model.Status == "Pending")
+            {
+                <option value="Pending" selected>Pending</option>
+            }
+            else
+            {
+                <option value="Pending">Pending</option>
+            }
+
+            @if (Model.Status == "Approved")
+            {
+                <option value="Approved" selected>Approved</option>
+            }
+            else
+            {
+                <option value="Approved">Approved</option>
+            }
+
+            @if (Model.Status == "Rejected")
+            {
+                <option value="Rejected" selected>Rejected</option>
+            }
+            else
+            {
+                <option value="Rejected">Rejected</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

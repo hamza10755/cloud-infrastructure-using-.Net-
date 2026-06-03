@@ -1,0 +1,68 @@
+@model IEnumerable<cloud_infrastructure.Models.ServerInstance>
+
+<h2>Server Instances</h2>
+
+<p>
+    <a class="btn btn-primary" asp-controller="ServerInstances" asp-action="Create">Create New Server</a>
+</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Hostname</th>
+            <th>RAM</th>
+            <th>Size</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Hostname</td>
+                <td>@item.RamGb</td>
+                <td>@item.InstanceSize</td>
+
+                <td>
+                    @if (item.Status == "Approved")
+                    {
+                        <span class="text-success">Approved</span>
+                    }
+                    else if (item.Status == "Rejected")
+                    {
+                        <span class="text-danger">Rejected</span>
+                    }
+                    else
+                    {
+                        <span class="text-warning">Pending</span>
+                    }
+                </td>
+
+                <td>
+                    <a class="btn btn-info btn-sm" asp-controller="ServerInstances" asp-action="Details" asp-route-id="@item.ServerInstanceId">Details</a>
+                    <a class="btn btn-warning btn-sm" asp-controller="ServerInstances" asp-action="Edit" asp-route-id="@item.ServerInstanceId">Edit</a>
+
+                    <form asp-controller="ServerInstances" asp-action="Delete" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.ServerInstanceId" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+
+                    <form asp-controller="ServerInstances" asp-action="Approve" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.ServerInstanceId" />
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+
+                    <form asp-controller="ServerInstances" asp-action="Reject" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.ServerInstanceId" />
+                        <button type="submit" class="btn btn-secondary btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

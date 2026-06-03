@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<h2>Admin Panel</h2>
+
+<hr />
+
+<p>
+    <strong>Total Servers:</strong>
+    @ViewBag.TotalServers
+</p>
+
+<p>
+    <strong>Total Packages:</strong>
+    @ViewBag.TotalPackages
+</p>
+
+<p>
+    <strong>Pending Servers:</strong>
+    @ViewBag.PendingServers
+</p>
+
+<p>
+    <strong>Approved Servers:</strong>
+    @ViewBag.ApprovedServers
+</p>
+
+<p>
+    <strong>Rejected Servers:</strong>
+    @ViewBag.RejectedServers
+</p>
+
+<br />
+
+<a asp-controller="ServerInstances"
+   asp-action="Index"
+   class="btn btn-primary">
+    Manage Servers
+</a>
