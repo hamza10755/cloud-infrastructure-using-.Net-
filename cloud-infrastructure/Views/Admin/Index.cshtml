@@ -1,40 +1,114 @@
+@model AdminDashboardViewModel
+
 @{
-    ViewData["Title"] = "Admin Panel";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Admin Panel</h2>
+    <style>
+        .stat-card {
+            background: #1c2128;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 1.25rem 1.4rem;
+            height: 100%;
+        }
 
-<hr />
+        .stat-value {
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #e6edf3;
+        }
 
-<p>
-    <strong>Total Servers:</strong>
-    @ViewBag.TotalServers
-</p>
+        .stat-label {
+            color: #8b949e;
+            font-size: 0.82rem;
+            margin-top: 0.3rem;
+        }
 
-<p>
-    <strong>Total Packages:</strong>
-    @ViewBag.TotalPackages
-</p>
+        .badge-pending {
+            background: rgba(210, 153, 34, 0.15);
+            color: #d29922;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+    </style>
 
-<p>
-    <strong>Pending Servers:</strong>
-    @ViewBag.PendingServers
-</p>
+<div class="container-fluid p-0">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="mb-1">Admin Dashboard</h2>
+            <div class="text-muted">Review pending infrastructure requests and monitor the portal.</div>
+        </div>
+        <div>
+            <a class="btn btn-outline-info" asp-action="ManageUsers">
+                <i class="bi bi-people me-1"></i> Manage Users
+            </a>
+        </div>
+    </div>
 
-<p>
-    <strong>Approved Servers:</strong>
-    @ViewBag.ApprovedServers
-</p>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3"><div class="stat-card"><div class="stat-value">@Model.TotalServers</div><div class="stat-label">Total Servers</div></div></div>
+        <div class="col-12 col-md-3"><div class="stat-card"><div class="stat-value">@Model.PendingServers</div><div class="stat-label">Pending Requests</div></div></div>
+        <div class="col-12 col-md-3"><div class="stat-card"><div class="stat-value">@Model.ApprovedServers</div><div class="stat-label">Approved Requests</div></div></div>
+        <div class="col-12 col-md-3"><div class="stat-card"><div class="stat-value">@Model.RejectedServers</div><div class="stat-label">Rejected Requests</div></div></div>
+    </div>
 
-<p>
-    <strong>Rejected Servers:</strong>
-    @ViewBag.RejectedServers
-</p>
-
-<br />
-
-<a asp-controller="ServerInstances"
-   asp-action="Index"
-   class="btn btn-primary">
-    Manage Servers
-</a>
+    <div class="card bg-dark border-secondary mb-4">
+        <div class="card-header border-secondary d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-inbox me-2"></i>Pending Requests</span>
+            <span class="text-muted small">@Model.TotalPackages packages available</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>RAM</th>
+                        <th>Size</th>
+                        <th>Developer</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.PendingRequests.Any())
+                    {
+                        foreach (var request in Model.PendingRequests)
+                        {
+                            <tr>
+                                <td><code>@request.Hostname</code></td>
+                                <td>@request.RamGb GB</td>
+                                <td>@request.InstanceSize</td>
+                                <td>@(request.Developer?.FullName ?? request.Developer?.UserName ?? request.DeveloperId)</td>
+                                <td>@(request.Purpose ?? "-")</td>
+                                <td><span class="badge-pending">Pending</span></td>
+                                <td class="text-end">
+                                    <form asp-action="ApproveServer" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@request.ServerInstanceId" />
+                                        <button type="submit" class="btn btn-sm btn-success me-1">Approve</button>
+                                    </form>
+                                    <form asp-action="RejectServer" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@request.ServerInstanceId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No pending requests.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

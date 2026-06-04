@@ -46,12 +46,13 @@ namespace cloud_infrastructure.Controllers
             await _context.SaveChangesAsync();
 
             // Redirect to the ServerInstances list so the requester can see the created request
-            return RedirectToAction("Index", "ServerInstances");
+            return RedirectToAction("RequestVM", "Developer");
         }
 
         // Approve a pending server
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveServer(int id)
         {
             var server = await _context.ServerInstances.FindAsync(id);
@@ -66,6 +67,7 @@ namespace cloud_infrastructure.Controllers
         // Reject a pending server
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectServer(int id)
         {
             var server = await _context.ServerInstances.FindAsync(id);

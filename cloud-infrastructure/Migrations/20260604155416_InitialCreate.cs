@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace cloud_infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIdentitySupport : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -181,6 +181,8 @@ namespace cloud_infrastructure.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Hostname = table.Column<string>(type: "TEXT", maxLength: 63, nullable: false),
                     RamGb = table.Column<int>(type: "INTEGER", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", nullable: false),
+                    Purpose = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     InstanceSize = table.Column<int>(type: "INTEGER", nullable: false),
                     DeveloperId = table.Column<string>(type: "TEXT", nullable: true)
                 },

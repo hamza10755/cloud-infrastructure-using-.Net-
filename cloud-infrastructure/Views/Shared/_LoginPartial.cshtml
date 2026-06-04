@@ -6,10 +6,10 @@
 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <form class="form-inline d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#provisionServerModal">+ Request Server</button>
-            <button type="submit" class="nav-link btn btn-link text-white">Logout @User.Identity?.Name</button>
+    <li class="nav-item d-flex align-items-center gap-3">
+        <span class="text-white-50 small">@User.Identity?.Name</span>
+        <form class="mb-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
         </form>
     </li>
 }

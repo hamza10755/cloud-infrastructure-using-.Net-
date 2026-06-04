@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using cloud_infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace cloud_infrastructure.Areas.Identity.Pages.Account
 {
@@ -55,6 +57,9 @@ namespace cloud_infrastructure.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string ReturnUrl { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string RequestedRole { get; set; } = "Developer";
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -120,6 +125,25 @@ namespace cloud_infrastructure.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    var assignedRole = string.Equals(RequestedRole, "Admin", StringComparison.OrdinalIgnoreCase)
+                        ? "Admin"
+                        : "Developer";
+
+                    var roleResult = await _userManager.AddToRoleAsync(user, assignedRole);
+
+                    if (!roleResult.Succeeded)
+                    {
+                        foreach (var error in roleResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+
+                        await _userManager.DeleteAsync(user);
+                        return Page();
+                    }
+
+                    TempData["AssignedRole"] = assignedRole;
+
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
@@ -127,7 +151,12 @@ namespace cloud_infrastructure.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+                        if (string.Equals(assignedRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return RedirectToAction("Index", "Admin", new { area = string.Empty });
+                        }
+
+                        return RedirectToAction("RequestVM", "Developer", new { area = string.Empty });
                     }
                 }
                 foreach (var error in result.Errors)

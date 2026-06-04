@@ -243,6 +243,10 @@ namespace cloud_infrastructure.Migrations
                     b.Property<int>("InstanceSize")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("RamGb")
                         .HasColumnType("INTEGER");
 

@@ -6,17 +6,23 @@
 
 <h1>@ViewData["Title"]</h1>
 
+<div class="mb-3 d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-primary" asp-page="./Register" asp-route-requestedRole="Developer">Register as Developer</a>
+    <a class="btn btn-outline-warning" asp-page="./Register" asp-route-requestedRole="Admin">Register as Admin</a>
+</div>
+
 <div class="row">
     <div class="col-md-6 col-lg-5 mx-auto">
         <div class="card shadow-sm">
             <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">Register Developer Account</h4>
+                <h4 class="mb-0">Register @(string.Equals(Model.RequestedRole, "Admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "Developer") Account</h4>
             </div>
             <div class="card-body bg-light">
                 <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                     <h2>Create a new account.</h2>
                     <hr />
                     <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                    <input type="hidden" asp-for="RequestedRole" />
                     <div class="form-floating mb-3">
                         <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                         <label asp-for="Input.Email">Email</label>

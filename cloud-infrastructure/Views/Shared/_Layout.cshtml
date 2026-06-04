@@ -13,8 +13,16 @@
         <nav class="sidebar custom-bg-dark text-white d-flex flex-column p-3">
             <h4 class="fw-bold ps-2 mb-4">CloudPortal</h4>
             <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item"><a href="/ServerInstances" class="nav-link text-white"><i class="bi bi-grid-1x2 me-2"></i> Developer Dashboard</a></li>
-                <li><a href="/Admin" class="nav-link text-white custom-active-link"><i class="bi bi-inbox me-2"></i> Admin Queue</a></li>
+                @if (User.IsInRole("Developer"))
+                {
+                    <li class="nav-item"><a asp-controller="Developer" asp-action="RequestVM" class="nav-link text-white"><i class="bi bi-grid-1x2 me-2"></i> Request New VM</a></li>
+                }
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="nav-item"><a asp-controller="Admin" asp-action="Index" class="nav-link text-white"><i class="bi bi-shield-lock me-2"></i> Admin Dashboard</a></li>
+                    <li class="nav-item"><a asp-controller="Admin" asp-action="ManageUsers" class="nav-link text-white"><i class="bi bi-people me-2"></i> Manage Users</a></li>
+                }
             </ul>
         </nav>
 
@@ -28,42 +36,6 @@
             <main class="p-4 flex-grow-1">
                 @RenderBody()
             </main>
-        </div>
-    </div>
-
-    <div class="modal fade" id="provisionServerModal" tabindex="-1" aria-labelledby="provisionServerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="provisionServerModalLabel">Request New Server</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body bg-light">
-                    <form asp-controller="Infrastructure" asp-action="RequestServer" method="post">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <label for="Hostname" class="form-label">Hostname</label>
-                            <input type="text" class="form-control" id="Hostname" name="Hostname" required pattern="^[a-z0-9][a-z0-9\-]*[a-z0-9]$" />
-                            <div class="form-text">Lowercase letters, digits, and hyphens only</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="RamGb" class="form-label">RAM (GB)</label>
-                            <input type="number" class="form-control" id="RamGb" name="RamGb" required min="1" max="128" value="16" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="InstanceSize" class="form-label">Instance Size</label>
-                            <select class="form-select" id="InstanceSize" name="InstanceSize" required>
-                                <option value="0">Small (2 vCPU)</option>
-                                <option value="1">Medium (4 vCPU)</option>
-                                <option value="2">Large (8 vCPU)</option>
-                            </select>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Submit Request</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div>
     </div>
 

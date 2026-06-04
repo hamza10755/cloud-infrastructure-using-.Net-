@@ -1,9 +1,11 @@
 using cloud_infrastructure.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace cloud_infrastructure.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ServerInstancesController : Controller
     {
         private readonly ApplicationDbContext _context;

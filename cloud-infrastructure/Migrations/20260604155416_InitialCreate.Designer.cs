@@ -11,8 +11,8 @@ using cloud_infrastructure.Models;
 namespace cloud_infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260526120216_AddFullNameToDeveloper")]
-    partial class AddFullNameToDeveloper
+    [Migration("20260604155416_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -246,8 +246,16 @@ namespace cloud_infrastructure.Migrations
                     b.Property<int>("InstanceSize")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("RamGb")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ServerInstanceId");
 

@@ -1,0 +1,148 @@
+@model DeveloperRequestViewModel
+
+@{
+    ViewData["Title"] = "Request New VM";
+}
+
+<style>
+    .panel-card {
+        background: #1c2128;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        color: #e6edf3;
+    }
+
+    .panel-card .form-label {
+        color: #e6edf3;
+    }
+
+    .cp-input, .cp-select, .cp-textarea {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+        border-radius: 8px;
+    }
+
+    .cp-input:focus, .cp-select:focus, .cp-textarea:focus {
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 0.2rem rgba(47, 129, 247, .18);
+    }
+
+    .badge-approved { background: rgba(63,185,80,.15); color: #3fb950; }
+    .badge-pending { background: rgba(210,153,34,.15); color: #d29922; }
+    .badge-rejected { background: rgba(248,81,73,.12); color: #f85149; }
+
+    .panel-card .text-muted {
+        color: #8b949e !important;
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="mb-1">Request New VM</h2>
+            <div class="text-muted">Submit a new provisioning request for review.</div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-7">
+            <div class="panel-card p-4">
+                <form asp-action="RequestVM" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Hostname" class="form-label"></label>
+                        <input asp-for="Hostname" class="form-control cp-input" placeholder="e.g. prod-api-01" />
+                        <span asp-validation-for="Hostname" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="RamGb" class="form-label"></label>
+                        <input asp-for="RamGb" type="number" class="form-control cp-input" min="1" max="128" />
+                        <span asp-validation-for="RamGb" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="InstanceSize" class="form-label"></label>
+                        <select asp-for="InstanceSize" class="form-select cp-select" asp-items="Html.GetEnumSelectList<InstanceSize>()"></select>
+                        <span asp-validation-for="InstanceSize" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Purpose" class="form-label"></label>
+                        <textarea asp-for="Purpose" rows="4" class="form-control cp-textarea" placeholder="Briefly describe the workload, owner, and expected duration."></textarea>
+                        <span asp-validation-for="Purpose" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">Submit Provisioning Request</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="panel-card p-0 overflow-hidden">
+                <div class="p-3 border-bottom border-secondary">
+                    <h5 class="mb-0">Recent Requests</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Hostname</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RecentRequests.Any())
+                            {
+                                foreach (var request in Model.RecentRequests)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@request.Hostname</div>
+                                            <div class="text-muted small">@request.Purpose</div>
+                                        </td>
+                                        <td>@request.InstanceSize</td>
+                                        <td>
+                                            @if (request.Status == "Approved")
+                                            {
+                                                <span class="badge badge-approved">Approved</span>
+                                            }
+                                            else if (request.Status == "Rejected")
+                                            {
+                                                <span class="badge badge-rejected">Rejected</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-pending">Pending</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No recent requests yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

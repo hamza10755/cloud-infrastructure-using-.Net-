@@ -13,7 +13,7 @@ namespace cloud_infrastructure.Models
         [Required]
         [MaxLength(63)]
         [Display(Name = "Hostname")]
-        [RegularExpression(@"^[a-z0-9][a-z0-9\-]*[a-z0-9]$", ErrorMessage = "Lowercase letters, digits, and hyphens only.")]
+        [RegularExpression(@"^[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]$", ErrorMessage = "Letters, digits, and hyphens only.")]
         public string Hostname { get; set; } = string.Empty;
 
         [Required]
@@ -24,6 +24,10 @@ namespace cloud_infrastructure.Models
         [Required]
         [Display(Name = "Status")]
         public string Status { get; set; } = "Pending";
+
+        [MaxLength(500)]
+        [Display(Name = "Purpose")]
+        public string? Purpose { get; set; }
 
         [Required]
         public InstanceSize InstanceSize { get; set; }
