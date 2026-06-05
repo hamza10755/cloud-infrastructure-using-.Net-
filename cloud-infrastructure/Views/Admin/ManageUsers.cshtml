@@ -39,7 +39,7 @@
                     foreach (var user in Model.Users)
                     {
                         <tr>
-                            <td>@(user.FullName ?? "-")</td>
+                            <td>@user.UserName</td>
                             <td>@user.Email</td>
                             <td>
                                 @foreach (var role in user.Roles)
@@ -48,18 +48,27 @@
                                 }
                             </td>
                             <td class="text-end">
-                                @if (!user.IsAdmin)
-                                {
-                                    <form asp-action="PromoteToAdmin" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="userId" value="@user.UserId" />
-                                        <button type="submit" class="btn btn-sm btn-warning">Promote to Admin</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">-</span>
-                                }
+                                <form asp-action="UpdateRoles" method="post" class="d-inline-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@user.UserId" />
+                                    @{
+                                        var isDevOnly = user.Roles.Count == 1 && user.Roles.Contains("Developer");
+                                        var isAdminOnly = user.Roles.Count == 1 && user.Roles.Contains("Admin");
+                                        var isBoth = user.Roles.Count > 1;
+                                    }
+                                    <select name="role" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
+                                        @if (isDevOnly) { @:<option value="Developer" selected>Developer</option>
+                                        } else { @:<option value="Developer">Developer</option>
+                                        }
+                                        @if (isAdminOnly) { @:<option value="Admin" selected>Admin</option>
+                                        } else { @:<option value="Admin">Admin</option>
+                                        }
+                                        @if (isBoth) { @:<option value="Both" selected>Both</option>
+                                        } else { @:<option value="Both">Both</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-light">Save</button>
+                                </form>
                             </td>
                         </tr>
                     }

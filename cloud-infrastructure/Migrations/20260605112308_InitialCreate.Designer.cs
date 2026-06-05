@@ -11,7 +11,7 @@ using cloud_infrastructure.Models;
 namespace cloud_infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260604155416_InitialCreate")]
+    [Migration("20260605112308_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -245,6 +245,11 @@ namespace cloud_infrastructure.Migrations
 
                     b.Property<int>("InstanceSize")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("OperatingSystem")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Purpose")
                         .HasMaxLength(500)

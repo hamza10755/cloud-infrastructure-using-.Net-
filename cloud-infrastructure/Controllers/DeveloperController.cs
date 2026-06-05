@@ -19,12 +19,30 @@ namespace cloud_infrastructure.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> RequestVM()
+        public async Task<IActionResult> RequestVM(int? id = null)
         {
             var model = new DeveloperRequestViewModel
             {
                 RecentRequests = await GetRecentRequestsAsync()
             };
+
+            if (id.HasValue)
+            {
+                var server = await _context.ServerInstances
+                    .FirstOrDefaultAsync(s => s.ServerInstanceId == id && s.DeveloperId == User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                if (server == null || server.Status != "Pending")
+                {
+                    return NotFound();
+                }
+
+                model.EditId = server.ServerInstanceId;
+                model.Hostname = server.Hostname;
+                model.RamGb = server.RamGb;
+                model.InstanceSize = server.InstanceSize;
+                model.OperatingSystem = server.OperatingSystem;
+                model.Purpose = server.Purpose;
+            }
 
             return View(model);
         }
@@ -39,21 +57,66 @@ namespace cloud_infrastructure.Controllers
                 return View(model);
             }
 
-            var server = new ServerInstance
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (model.EditId.HasValue)
+            {
+                var server = await _context.ServerInstances
+                    .FirstOrDefaultAsync(s => s.ServerInstanceId == model.EditId && s.DeveloperId == currentUserId);
+
+                if (server == null || server.Status != "Pending")
+                {
+                    return NotFound();
+                }
+
+                server.Hostname = model.Hostname;
+                server.RamGb = model.RamGb;
+                server.InstanceSize = model.InstanceSize;
+                server.OperatingSystem = model.OperatingSystem;
+                server.Purpose = model.Purpose;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"VM request '{model.Hostname}' updated successfully.";
+                return RedirectToAction(nameof(RequestVM), new { id = (int?)null });
+            }
+
+            var newServer = new ServerInstance
             {
                 Hostname = model.Hostname,
                 RamGb = model.RamGb,
                 InstanceSize = model.InstanceSize,
+                OperatingSystem = model.OperatingSystem,
                 Purpose = model.Purpose,
                 Status = "Pending",
-                DeveloperId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                DeveloperId = currentUserId
             };
 
-            _context.ServerInstances.Add(server);
+            _context.ServerInstances.Add(newServer);
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"VM request '{model.Hostname}' submitted successfully.";
-            return RedirectToAction(nameof(RequestVM));
+            return RedirectToAction(nameof(RequestVM), new { id = (int?)null });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRequest(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var server = await _context.ServerInstances
+                .FirstOrDefaultAsync(s => s.ServerInstanceId == id && s.DeveloperId == currentUserId);
+
+            if (server == null || server.Status != "Pending")
+            {
+                return NotFound();
+            }
+
+            _context.ServerInstances.Remove(server);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"VM request '{server.Hostname}' deleted.";
+            return RedirectToAction(nameof(RequestVM), new { id = (int?)null });
         }
 
         private async Task<List<ServerInstance>> GetRecentRequestsAsync()

@@ -20,10 +20,26 @@ namespace cloud_infrastructure.ViewModels
         [Display(Name = "Instance Size")]
         public InstanceSize InstanceSize { get; set; } = InstanceSize.Medium;
 
+        [Required]
+        [Display(Name = "Operating System")]
+        public string OperatingSystem { get; set; } = "Ubuntu 24.04 LTS";
+
         [MaxLength(500)]
         [Display(Name = "Purpose / Justification")]
         public string? Purpose { get; set; }
 
+        public int? EditId { get; set; }
+
         public IEnumerable<ServerInstance> RecentRequests { get; set; } = new List<ServerInstance>();
+
+        public static readonly string[] OperatingSystems =
+        [
+            "Ubuntu 22.04 LTS",
+            "Ubuntu 24.04 LTS",
+            "Debian 12",
+            "Rocky Linux 9",
+            "Windows Server 2022",
+            "Windows Server 2019"
+        ];
     }
 }

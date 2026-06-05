@@ -184,6 +184,7 @@ namespace cloud_infrastructure.Migrations
                     Status = table.Column<string>(type: "TEXT", nullable: false),
                     Purpose = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     InstanceSize = table.Column<int>(type: "INTEGER", nullable: false),
+                    OperatingSystem = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     DeveloperId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>

@@ -31,6 +31,12 @@ namespace cloud_infrastructure.Models
 
         [Required]
         public InstanceSize InstanceSize { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        [Display(Name = "Operating System")]
+        public string OperatingSystem { get; set; } = string.Empty;
+
         public string? DeveloperId { get; set; }
         public Developer? Developer { get; set; }
         public ICollection<ServerSoftware> ServerSoftwares { get; set; } = new List<ServerSoftware>();

@@ -243,6 +243,11 @@ namespace cloud_infrastructure.Migrations
                     b.Property<int>("InstanceSize")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("OperatingSystem")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Purpose")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");

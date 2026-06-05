@@ -81,13 +81,13 @@ namespace cloud_infrastructure.Controllers
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                model.Users.Add(new UserWithRoles
-                {
-                    UserId = user.Id,
-                    Email = user.Email ?? "",
-                    FullName = user.FullName,
-                    Roles = roles.ToList()
-                });
+                    model.Users.Add(new UserWithRoles
+                    {
+                        UserId = user.Id,
+                        UserName = user.UserName ?? "",
+                        Email = user.Email ?? "",
+                        Roles = roles.ToList()
+                    });
             }
 
             return View(model);
@@ -95,7 +95,7 @@ namespace cloud_infrastructure.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PromoteToAdmin(string userId)
+        public async Task<IActionResult> UpdateRoles(string userId, string role)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -103,14 +103,31 @@ namespace cloud_infrastructure.Controllers
                 return NotFound();
             }
 
-            var result = await _userManager.AddToRoleAsync(user, "Admin");
-            if (!result.Succeeded)
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            if (string.Equals(role, "Developer", StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError(string.Empty, "Failed to promote user to Admin.");
-                return RedirectToAction(nameof(ManageUsers));
+                if (currentRoles.Contains("Admin"))
+                    await _userManager.RemoveFromRoleAsync(user, "Admin");
+                if (!currentRoles.Contains("Developer"))
+                    await _userManager.AddToRoleAsync(user, "Developer");
+            }
+            else if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                if (currentRoles.Contains("Developer"))
+                    await _userManager.RemoveFromRoleAsync(user, "Developer");
+                if (!currentRoles.Contains("Admin"))
+                    await _userManager.AddToRoleAsync(user, "Admin");
+            }
+            else if (string.Equals(role, "Both", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!currentRoles.Contains("Admin"))
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                if (!currentRoles.Contains("Developer"))
+                    await _userManager.AddToRoleAsync(user, "Developer");
             }
 
-            TempData["SuccessMessage"] = $"Promoted {user.Email} to Admin.";
+            TempData["SuccessMessage"] = $"Updated roles for {user.UserName}.";
             return RedirectToAction(nameof(ManageUsers));
         }
     }

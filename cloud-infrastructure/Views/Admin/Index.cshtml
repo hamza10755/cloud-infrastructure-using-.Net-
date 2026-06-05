@@ -67,6 +67,7 @@
                     <tr>
                         <th>Hostname</th>
                         <th>RAM</th>
+                        <th>OS</th>
                         <th>Size</th>
                         <th>Developer</th>
                         <th>Purpose</th>
@@ -82,8 +83,9 @@
                             <tr>
                                 <td><code>@request.Hostname</code></td>
                                 <td>@request.RamGb GB</td>
+                                <td>@request.OperatingSystem</td>
                                 <td>@request.InstanceSize</td>
-                                <td>@(request.Developer?.FullName ?? request.Developer?.UserName ?? request.DeveloperId)</td>
+                                <td>@(request.Developer?.UserName ?? request.DeveloperId)</td>
                                 <td>@(request.Purpose ?? "-")</td>
                                 <td><span class="badge-pending">Pending</span></td>
                                 <td class="text-end">
@@ -104,7 +106,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No pending requests.</td>
+                            <td colspan="8" class="text-center text-muted py-4">No pending requests.</td>
                         </tr>
                     }
                 </tbody>

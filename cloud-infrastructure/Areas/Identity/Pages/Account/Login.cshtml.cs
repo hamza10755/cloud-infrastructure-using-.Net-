@@ -113,28 +113,29 @@ namespace cloud_infrastructure.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return Page();
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
 
                     if (string.IsNullOrWhiteSpace(returnUrl) || string.Equals(returnUrl, Url.Content("~/"), StringComparison.OrdinalIgnoreCase))
                     {
-                        var user = await _userManager.FindByEmailAsync(Input.Email);
-                        if (user != null)
+                        var roles = await _userManager.GetRolesAsync(user);
+                        if (roles.Contains("Admin", StringComparer.OrdinalIgnoreCase))
                         {
-                            var roles = await _userManager.GetRolesAsync(user);
-                            if (roles.Contains("Admin", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return RedirectToAction("Index", "Admin", new { area = string.Empty });
-                            }
+                            return RedirectToAction("Index", "Admin", new { area = string.Empty });
+                        }
 
-                            if (roles.Contains("Developer", StringComparer.OrdinalIgnoreCase))
-                            {
-                                return RedirectToAction("RequestVM", "Developer", new { area = string.Empty });
-                            }
+                        if (roles.Contains("Developer", StringComparer.OrdinalIgnoreCase))
+                        {
+                            return RedirectToAction("RequestVM", "Developer", new { area = string.Empty });
                         }
                     }
 
