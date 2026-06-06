@@ -1,0 +1,14 @@
+@model string
+
+@if (Model == "Approved")
+{
+    <span class="badge" style="background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid rgba(63,185,80,.3);">Approved</span>
+}
+else if (Model == "Rejected")
+{
+    <span class="badge" style="background: rgba(248,81,73,.12); color: #f85149; border: 1px solid rgba(248,81,73,.3);">Rejected</span>
+}
+else
+{
+    <span class="badge" style="background: rgba(210,153,34,.15); color: #d29922; border: 1px solid rgba(210,153,34,.3);">Pending</span>
+}

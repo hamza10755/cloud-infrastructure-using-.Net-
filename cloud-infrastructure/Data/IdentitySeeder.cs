@@ -19,6 +19,7 @@ namespace cloud_infrastructure.Data
 
             await EnsureRolesAsync(roleManager);
             await EnsureAdminExistsAsync(dbContext, userManager);
+            await EnsureSoftwarePackagesAsync(dbContext);
         }
 
         private static async Task EnsureRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -47,6 +48,21 @@ namespace cloud_infrastructure.Data
             if (firstUser != null)
             {
                 await userManager.AddToRoleAsync(firstUser, "Admin");
+            }
+        }
+
+        private static async Task EnsureSoftwarePackagesAsync(ApplicationDbContext dbContext)
+        {
+            if (!await dbContext.SoftwarePackages.AnyAsync())
+            {
+                dbContext.SoftwarePackages.AddRange(
+                    new SoftwarePackage { PackageName = "Docker", Version = "24.0.7" },
+                    new SoftwarePackage { PackageName = "Node.js", Version = "20.11.0" },
+                    new SoftwarePackage { PackageName = "Python", Version = "3.12.1" },
+                    new SoftwarePackage { PackageName = "PostgreSQL", Version = "16.1" },
+                    new SoftwarePackage { PackageName = "Nginx", Version = "1.25.3" }
+                );
+                await dbContext.SaveChangesAsync();
             }
         }
     }

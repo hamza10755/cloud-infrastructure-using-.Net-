@@ -43,8 +43,11 @@
             <div class="text-muted">Review pending infrastructure requests and monitor the portal.</div>
         </div>
         <div>
-            <a class="btn btn-outline-info" asp-action="ManageUsers">
+            <a class="btn btn-outline-info me-2" asp-action="ManageUsers">
                 <i class="bi bi-people me-1"></i> Manage Users
+            </a>
+            <a class="btn btn-outline-secondary" asp-action="ServerHistory">
+                <i class="bi bi-clock-history me-1"></i> Server History
             </a>
         </div>
     </div>
@@ -87,7 +90,7 @@
                                 <td>@request.InstanceSize</td>
                                 <td>@(request.Developer?.UserName ?? request.DeveloperId)</td>
                                 <td>@(request.Purpose ?? "-")</td>
-                                <td><span class="badge-pending">Pending</span></td>
+                                <td><partial name="_StatusBadge" model="request.Status" /></td>
                                 <td class="text-end">
                                     <form asp-action="ApproveServer" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()

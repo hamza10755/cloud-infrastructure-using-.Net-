@@ -1,0 +1,105 @@
+@model ServerHistoryViewModel
+
+@{
+    ViewData["Title"] = "Server History";
+}
+
+<style>
+    .badge-approved { background: rgba(63,185,80,.15); color: #3fb950; }
+    .badge-pending { background: rgba(210,153,34,.15); color: #d29922; }
+    .badge-rejected { background: rgba(248,81,73,.12); color: #f85149; }
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="mb-1">Server History</h2>
+        <div class="text-muted">Browse all server requests with full details.</div>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Search by hostname or operating system..." value="@Model.Search" />
+        <button type="submit" class="btn btn-outline-info">
+            <i class="bi bi-search me-1"></i> Search
+        </button>
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <a asp-action="ServerHistory" class="btn btn-outline-secondary">Clear</a>
+        }
+    </div>
+</form>
+
+<div class="card bg-dark border-secondary">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>
+                        <a class="text-info text-decoration-none" asp-action="ServerHistory" asp-route-sortOrder="@ViewBag.IdSortParm" asp-route-search="@Model.Search">
+                            ID @(ViewBag.CurrentSort == "id_asc" ? "▲" : (string.IsNullOrEmpty(ViewBag.CurrentSort) ? "▼" : ""))
+                        </a>
+                    </th>
+                    <th>
+                        <a class="text-info text-decoration-none" asp-action="ServerHistory" asp-route-sortOrder="@ViewBag.HostnameSortParm" asp-route-search="@Model.Search">
+                            Hostname @(ViewBag.CurrentSort == "hostname_asc" ? "▲" : (ViewBag.CurrentSort == "hostname_desc" ? "▼" : ""))
+                        </a>
+                    </th>
+                    <th>
+                        <a class="text-info text-decoration-none" asp-action="ServerHistory" asp-route-sortOrder="@ViewBag.RamSortParm" asp-route-search="@Model.Search">
+                            RAM @(ViewBag.CurrentSort == "ram_asc" ? "▲" : (ViewBag.CurrentSort == "ram_desc" ? "▼" : ""))
+                        </a>
+                    </th>
+                    <th>
+                        <a class="text-info text-decoration-none" asp-action="ServerHistory" asp-route-sortOrder="@ViewBag.OsSortParm" asp-route-search="@Model.Search">
+                            OS @(ViewBag.CurrentSort == "os_asc" ? "▲" : (ViewBag.CurrentSort == "os_desc" ? "▼" : ""))
+                        </a>
+                    </th>
+                    <th>Size</th>
+                    <th>Developer</th>
+                    <th>Purpose</th>
+                    <th>
+                        <a class="text-info text-decoration-none" asp-action="ServerHistory" asp-route-sortOrder="@ViewBag.StatusSortParm" asp-route-search="@Model.Search">
+                            Status @(ViewBag.CurrentSort == "status_asc" ? "▲" : (ViewBag.CurrentSort == "status_desc" ? "▼" : ""))
+                        </a>
+                    </th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Servers.Any())
+                {
+                    foreach (var server in Model.Servers)
+                    {
+                        <tr>
+                            <td><code>#@server.ServerInstanceId</code></td>
+                            <td class="fw-semibold">@server.Hostname</td>
+                            <td>@server.RamGb GB</td>
+                            <td>@server.OperatingSystem</td>
+                            <td>@server.InstanceSize</td>
+                            <td>@(server.Developer?.UserName ?? server.DeveloperId)</td>
+                            <td>@(server.Purpose ?? "-")</td>
+                            <td>
+                                <partial name="_StatusBadge" model="server.Status" />
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="ServerDetails" asp-route-id="@server.ServerInstanceId" class="btn btn-sm btn-outline-info">View</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            @(string.IsNullOrWhiteSpace(Model.Search) ? "No servers yet." : "No servers match your search.")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -30,6 +30,10 @@ namespace cloud_infrastructure.ViewModels
 
         public int? EditId { get; set; }
 
+        public List<int> SelectedSoftwareIds { get; set; } = new();
+
+        public List<SoftwarePackage> AvailableSoftware { get; set; } = new();
+
         public IEnumerable<ServerInstance> RecentRequests { get; set; } = new List<ServerInstance>();
 
         public static readonly string[] OperatingSystems =

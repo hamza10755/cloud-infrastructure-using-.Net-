@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace cloud_infrastructure.Controllers
 {
     [Authorize(Roles = "Admin")]
+    [Route("Admin")]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +20,8 @@ namespace cloud_infrastructure.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet]
+        [HttpGet("")]
+        [HttpGet("Dashboard")]
         public async Task<IActionResult> Index()
         {
             var pendingRequests = await _context.ServerInstances
@@ -41,7 +43,7 @@ namespace cloud_infrastructure.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost("ApproveServer")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveServer(int id)
         {
@@ -57,7 +59,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("RejectServer")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectServer(int id)
         {
@@ -72,7 +74,8 @@ namespace cloud_infrastructure.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        [HttpGet]
+
+        [HttpGet("ManageUsers")]
         public async Task<IActionResult> ManageUsers()
         {
             var users = await _context.Users.ToListAsync();
@@ -93,7 +96,71 @@ namespace cloud_infrastructure.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpGet("ServerHistory")]
+        public async Task<IActionResult> ServerHistory(string? search = null, string? sortOrder = null)
+        {
+            var query = _context.ServerInstances
+                .Include(s => s.Developer)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.ToLower();
+                query = query.Where(s =>
+                    s.Hostname.ToLower().Contains(term) ||
+                    s.OperatingSystem.ToLower().Contains(term));
+            }
+
+            // Set up sorting params in ViewBag
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.IdSortParm = string.IsNullOrEmpty(sortOrder) ? "id_asc" : "";
+            ViewBag.HostnameSortParm = sortOrder == "hostname_asc" ? "hostname_desc" : "hostname_asc";
+            ViewBag.RamSortParm = sortOrder == "ram_asc" ? "ram_desc" : "ram_asc";
+            ViewBag.OsSortParm = sortOrder == "os_asc" ? "os_desc" : "os_asc";
+            ViewBag.StatusSortParm = sortOrder == "status_asc" ? "status_desc" : "status_asc";
+
+            query = sortOrder switch
+            {
+                "id_asc" => query.OrderBy(s => s.ServerInstanceId),
+                "hostname_asc" => query.OrderBy(s => s.Hostname),
+                "hostname_desc" => query.OrderByDescending(s => s.Hostname),
+                "ram_asc" => query.OrderBy(s => s.RamGb),
+                "ram_desc" => query.OrderByDescending(s => s.RamGb),
+                "os_asc" => query.OrderBy(s => s.OperatingSystem),
+                "os_desc" => query.OrderByDescending(s => s.OperatingSystem),
+                "status_asc" => query.OrderBy(s => s.Status),
+                "status_desc" => query.OrderByDescending(s => s.Status),
+                _ => query.OrderByDescending(s => s.ServerInstanceId) // Default: Newest first (id_desc)
+            };
+
+            var model = new ServerHistoryViewModel
+            {
+                Search = search,
+                SortOrder = sortOrder,
+                Servers = await query.ToListAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpGet("ServerDetails/{id}")]
+        public async Task<IActionResult> ServerDetails(int id)
+        {
+            var server = await _context.ServerInstances
+                .Include(s => s.Developer)
+                .Include(s => s.ServerSoftwares)
+                    .ThenInclude(ss => ss.SoftwarePackage)
+                .FirstOrDefaultAsync(s => s.ServerInstanceId == id);
+
+            if (server == null)
+            {
+                return NotFound();
+            }
+
+            return View(server);
+        }
+
+        [HttpPost("UpdateRoles")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRoles(string userId, string role)
         {

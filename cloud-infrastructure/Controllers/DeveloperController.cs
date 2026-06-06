@@ -9,6 +9,7 @@ using System.Security.Claims;
 namespace cloud_infrastructure.Controllers
 {
     [Authorize(Roles = "Developer,Admin")]
+    [Route("Developer")]
     public class DeveloperController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -18,17 +19,19 @@ namespace cloud_infrastructure.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpGet("RequestVM/{id?}")]
         public async Task<IActionResult> RequestVM(int? id = null)
         {
             var model = new DeveloperRequestViewModel
             {
-                RecentRequests = await GetRecentRequestsAsync()
+                RecentRequests = await GetRecentRequestsAsync(),
+                AvailableSoftware = await _context.SoftwarePackages.ToListAsync()
             };
 
             if (id.HasValue)
             {
                 var server = await _context.ServerInstances
+                    .Include(s => s.ServerSoftwares)
                     .FirstOrDefaultAsync(s => s.ServerInstanceId == id && s.DeveloperId == User.FindFirstValue(ClaimTypes.NameIdentifier));
 
                 if (server == null || server.Status != "Pending")
@@ -42,18 +45,20 @@ namespace cloud_infrastructure.Controllers
                 model.InstanceSize = server.InstanceSize;
                 model.OperatingSystem = server.OperatingSystem;
                 model.Purpose = server.Purpose;
+                model.SelectedSoftwareIds = server.ServerSoftwares.Select(ss => ss.SoftwarePackageId).ToList();
             }
 
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost("RequestVM/{id?}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestVM(DeveloperRequestViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 model.RecentRequests = await GetRecentRequestsAsync();
+                model.AvailableSoftware = await _context.SoftwarePackages.ToListAsync();
                 return View(model);
             }
 
@@ -62,6 +67,7 @@ namespace cloud_infrastructure.Controllers
             if (model.EditId.HasValue)
             {
                 var server = await _context.ServerInstances
+                    .Include(s => s.ServerSoftwares)
                     .FirstOrDefaultAsync(s => s.ServerInstanceId == model.EditId && s.DeveloperId == currentUserId);
 
                 if (server == null || server.Status != "Pending")
@@ -74,6 +80,16 @@ namespace cloud_infrastructure.Controllers
                 server.InstanceSize = model.InstanceSize;
                 server.OperatingSystem = model.OperatingSystem;
                 server.Purpose = model.Purpose;
+
+                // Update junction table
+                server.ServerSoftwares.Clear();
+                if (model.SelectedSoftwareIds != null)
+                {
+                    foreach (var packageId in model.SelectedSoftwareIds)
+                    {
+                        server.ServerSoftwares.Add(new ServerSoftware { ServerInstanceId = server.ServerInstanceId, SoftwarePackageId = packageId });
+                    }
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -92,6 +108,14 @@ namespace cloud_infrastructure.Controllers
                 DeveloperId = currentUserId
             };
 
+            if (model.SelectedSoftwareIds != null)
+            {
+                foreach (var packageId in model.SelectedSoftwareIds)
+                {
+                    newServer.ServerSoftwares.Add(new ServerSoftware { SoftwarePackageId = packageId });
+                }
+            }
+
             _context.ServerInstances.Add(newServer);
             await _context.SaveChangesAsync();
 
@@ -99,7 +123,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(RequestVM), new { id = (int?)null });
         }
 
-        [HttpPost]
+        [HttpPost("DeleteRequest")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRequest(int id)
         {

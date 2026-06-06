@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace cloud_infrastructure.Controllers
 {
     [Authorize]
+    [Route("Infrastructure")]
     public class InfrastructureController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,8 +17,8 @@ namespace cloud_infrastructure.Controllers
             _context = context;
         }
 
-        // Shows pending servers on the dashboard (uses Home/Index view)
-        [HttpGet]
+        [HttpGet("")]
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             var pending = await _context.ServerInstances
@@ -28,8 +29,7 @@ namespace cloud_infrastructure.Controllers
             return View("~/Views/Home/Index.cshtml", pending);
         }
 
-        // Preserve existing request logic but make it async and redirect to the integrated dashboard
-        [HttpPost]
+        [HttpPost("RequestServer")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestServer(ServerInstance newServer)
         {
@@ -50,7 +50,7 @@ namespace cloud_infrastructure.Controllers
         }
 
         // Approve a pending server
-        [HttpPost]
+        [HttpPost("ApproveServer")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveServer(int id)
@@ -65,7 +65,7 @@ namespace cloud_infrastructure.Controllers
         }
 
         // Reject a pending server
-        [HttpPost]
+        [HttpPost("RejectServer")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectServer(int id)

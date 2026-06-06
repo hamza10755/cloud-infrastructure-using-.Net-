@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace cloud_infrastructure.Controllers
 {
     [Authorize(Roles = "Admin")]
+    [Route("ServerInstances")]
     public class ServerInstancesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,24 +16,32 @@ namespace cloud_infrastructure.Controllers
             _context = context;
         }
 
+        [HttpGet("")]
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.ServerInstances.ToListAsync());
         }
 
+        [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(int id)
         {
-            var server = await _context.ServerInstances.FindAsync(id);
+            var server = await _context.ServerInstances
+                .Include(s => s.Developer)
+                .Include(s => s.ServerSoftwares)
+                    .ThenInclude(ss => ss.SoftwarePackage)
+                .FirstOrDefaultAsync(s => s.ServerInstanceId == id);
             if (server == null) return NotFound();
             return View(server);
         }
 
+        [HttpGet("Create")]
         public IActionResult Create()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServerInstance serverInstance)
         {
@@ -48,6 +57,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
             var server = await _context.ServerInstances.FindAsync(id);
@@ -55,7 +65,7 @@ namespace cloud_infrastructure.Controllers
             return View(server);
         }
 
-        [HttpPost]
+        [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ServerInstance serverInstance)
         {
@@ -74,7 +84,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("Delete/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
@@ -87,7 +97,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("Approve/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
@@ -100,7 +110,7 @@ namespace cloud_infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("Reject/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {

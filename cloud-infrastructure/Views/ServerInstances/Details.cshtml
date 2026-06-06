@@ -4,7 +4,26 @@
 
 <ul>
     <li>Hostname: @Model.Hostname</li>
-    <li>RAM: @Model.RamGb</li>
+    <li>RAM: @Model.RamGb GB</li>
     <li>Size: @Model.InstanceSize</li>
-    <li>Status: @Model.Status</li>
+    <li>Status: <partial name="_StatusBadge" model="Model.Status" /></li>
+    <li>Developer: @(Model.Developer?.UserName ?? Model.DeveloperId ?? "-")</li>
+</ul>
+
+<h4>Requested Software</h4>
+<ul>
+    @if (Model.ServerSoftwares != null && Model.ServerSoftwares.Any())
+    {
+        @foreach (var ss in Model.ServerSoftwares)
+        {
+            @if (ss.SoftwarePackage != null)
+            {
+                <li>@ss.SoftwarePackage.PackageName (v@ss.SoftwarePackage.Version)</li>
+            }
+        }
+    }
+    else
+    {
+        <li>No software packages.</li>
+    }
 </ul>

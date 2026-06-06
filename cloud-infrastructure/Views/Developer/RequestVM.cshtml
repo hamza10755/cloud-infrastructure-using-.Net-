@@ -89,6 +89,32 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Pre-installed Software Packages</label>
+                        <div class="row g-2 p-2 rounded" style="background: #0d1117; border: 1px solid #30363d; margin: 0;">
+                            @if (Model.AvailableSoftware != null && Model.AvailableSoftware.Any())
+                            {
+                                @foreach (var software in Model.AvailableSoftware)
+                                {
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="SelectedSoftwareIds" value="@software.SoftwarePackageId" 
+                                                   id="sw_@software.SoftwarePackageId" class="form-check-input"
+                                                   @(Model.SelectedSoftwareIds != null && Model.SelectedSoftwareIds.Contains(software.SoftwarePackageId) ? "checked" : "") />
+                                            <label class="form-check-label text-white small" for="sw_@software.SoftwarePackageId">
+                                                @software.PackageName <span class="text-info">(@software.Version)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-muted small ps-2">No software packages available.</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label asp-for="Purpose" class="form-label"></label>
                         <textarea asp-for="Purpose" rows="4" class="form-control cp-textarea" placeholder="Briefly describe the workload, owner, and expected duration."></textarea>
                         <span asp-validation-for="Purpose" class="text-danger"></span>
@@ -129,18 +155,7 @@
                                         <td>@request.OperatingSystem</td>
                                         <td>@request.InstanceSize</td>
                                         <td>
-                                            @if (request.Status == "Approved")
-                                            {
-                                                <span class="badge badge-approved">Approved</span>
-                                            }
-                                            else if (request.Status == "Rejected")
-                                            {
-                                                <span class="badge badge-rejected">Rejected</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-pending">Pending</span>
-                                            }
+                                            <partial name="_StatusBadge" model="request.Status" />
                                         </td>
                                         <td class="text-end">
                                             @if (request.Status == "Pending")
